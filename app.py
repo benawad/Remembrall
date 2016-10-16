@@ -318,13 +318,6 @@ def get_quizlet(set_id):
         return "Something went wrong", 500
 
 
-def help(recipient_id):
-    send_message(recipient_id, "Available commands:")
-    send_message(recipient_id, "import <quizlet id>")
-    send_message(recipient_id, "quiz <quiz name>")
-    send_message(recipient_id, "list")
-    send_message(recipient_id, "Stop")
-
 
 def send_message(recipient_id, message):
     message_data = {
