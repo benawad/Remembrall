@@ -159,7 +159,7 @@ class ApplicationState(object):
         """Lists the decks available."""
         return 'Decks available: {}'.format([
             'Deck {}: {} ({} cards)'.format(deck['id'], deck['title'], len(deck['cards']))
-            for deck in self.decks
+            for key, deck in self.decks
         ])
 
 
