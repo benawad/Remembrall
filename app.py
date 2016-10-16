@@ -147,7 +147,7 @@ class ApplicationState(object):
             resp += "Uh oh. I'll quiz you on that again later this game."
             current_buckets['now'].append(q)
 
-        return "{} Next question: {}".format(resp, self.next_question())
+        return "{} Next question: {}".format(resp, self.next_question(user))
 
 
     def stop_session(self, user):
@@ -204,7 +204,7 @@ class Router(object):
     def handle_message(self, sender, message):
         if message.startswith('quiz'):
             send_message(sender, self.state.start_session(sender, message))
-            send_message(sender, self.state.next_question())
+            send_message(sender, self.state.next_question(sender))
         elif message.startswith('import'):
             send_message(sender, self.state.perform_import(message[7:]))
         elif message.startswith('help'):
