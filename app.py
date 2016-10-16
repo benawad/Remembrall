@@ -75,6 +75,63 @@ class ApplicationState(object):
         self.sessions[user] = {
             'deck': deck_id,
         }
+        self._rotate_buckets(user, deck_id)
+        return self.hard_question()
+
+    def next_question(self, user):
+        """Asks the next question."""
+        if not self.sessions[user]:
+            return "You aren't currently in a session. Type 'quiz me on <set>' to start."
+
+        deck_id = self.sessions[user]['deck']
+        current_buckets = self._fetch_buckets(user, deck_id)
+        now = current_buckets['now']
+        if not now:
+            return "You've answered all of the questions! " + self.stop_session()
+
+        # ask question
+        return str(now[0])
+
+
+    def answer_question(self, user):
+        if not self.sessions[user]:
+            return "You aren't currently in a session. Type 'quiz me on <set>' to start."
+
+        deck_id = self.sessions[user]['deck']
+        current_buckets = self._fetch_buckets(user, deck_id)
+        now = current_buckets['now']
+
+        return "The answer is {}. Did you get it right?".format(str(now[0]))
+
+    def bucket(self, user, response):
+        if not self.sessions[user]:
+            return "You aren't currently in a session. Type 'quiz me on <set>' to start."
+
+        deck_id = self.sessions[user]['deck']
+        current_buckets = self._fetch_buckets(user, deck_id)
+        now = current_buckets['now']
+
+        # rebucket
+        q = now[0]
+        current_buckets['now'] = now[1:]
+
+        resp = ""
+
+        if response == 'easy':
+            resp += "Awesome! I won't quiz you on this for a while."
+            current_buckets['easy'].append(q)
+        elif response == 'medium':
+            resp += "Great! I'll quiz you again on that a bit later."
+            current_buckets['medium'].append(q)
+        elif response == 'hard':
+            resp += "Good job! This is a tough one, so I'll quiz you on that soon."
+            current_buckets['hard'].append(q)
+        elif response == 'no':
+            resp += "Uh oh. I'll quiz you on that again later this game."
+            current_buckets['now'].append(q)
+
+        return "{} Next question: {}".format(resp, self.next_question())
+
 
     def stop_session(self, user):
         if user not in self.sessions:
@@ -88,6 +145,36 @@ class ApplicationState(object):
             'Deck {}: {} ({} cards)'.format(deck['id'], deck['title'], len(deck['cards']))
             for deck in self.decks
         ])
+
+
+    def _rotate_buckets(self, user, deck_id):
+        """Updates the now bucket if empty."""
+        buckets = self._fetch_buckets(user, deck_id)
+        while not buckets['now']:
+            buckets['now'] = buckets['hard']
+            buckets['hard'] = buckets['medium']
+            buckets['medium'] = buckets['easy']
+
+
+    def _fetch_buckets(self, user, deck_id):
+        """Fetches buckets of a user and deck."""
+        if not user in self.buckets:
+            self.buckets[user] = {}
+        user_buckets = self.buckets[user]
+        if not deck_id in user_buckets:
+            if not deck_id in self.decks:
+                raise ValueError("Deck not found for fetch_buckets.")
+            cards = self.decks[deck_id]['cards'][:]
+            if not cards:
+                raise ValueError("Empty deck.")
+            user_buckets[deck_id] = {
+                'now': cards,
+                'hard': [],
+                'medium': [],
+                'easy': [],
+            }
+        return user_buckets[deck_id]
+
 
 state = ApplicationState()
 
