@@ -205,12 +205,18 @@ class Router(object):
         self.state = ApplicationState()
 
     def handle_postback(self, sender, payload):
-        send_message(sender, self.state.bucket(sender, payload))
+        parts = payload.split()
+        if parts[0] == "bucket":
+            send_message(sender, self.state.bucket(sender, parts[1]))
+        elif parts[0] == "import":
+            send_message(sender, self.state.perform_import(parts[1]))
 
     def handle_message(self, sender, message):
         parts = message.split()
 
-        if message.startswith('quiz'):
+        if self.state.is_answering(sender):
+            self.send_answer(sender, self.state.answer_question(sender))
+        elif message.startswith('quiz'):
             if len(parts) <= 1:
                 send_message(sender, "You need to say: quiz <set id>")
                 return
@@ -228,8 +234,8 @@ class Router(object):
             send_message(sender, self.state.list())
         elif message.startswith('stop'):
             send_message(sender, self.state.stop_session(sender))
-        elif self.state.is_answering(sender):
-            self.send_answer(sender, self.state.answer_question(sender))
+        elif message.startswith('search'):
+            search_quizlet(sender, )
         else:
             send_message(sender, "I'm not sure how to respond to that. Say 'help' for help.")
 
