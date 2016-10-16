@@ -25,13 +25,10 @@ def search_quizlet(recipient_id, q):
     payload = {'client_id': client_id, 'whitespace': 1}
     r = requests.get("https://api.quizlet.com/2.0/search/sets?q=%s" % q, params=payload)
 
-    return r
-
     if r.status_code != 200:
         send_message(recipient_id, "Could not find any search results. Try another query")
 
     data = json.loads(r.text)
-    return data['sets']
     list_thumbnails(recipient_id, list(map(set_to_element, x), data['sets']))
 
 def fetch_quizlet(deck_id):
