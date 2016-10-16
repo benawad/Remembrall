@@ -205,7 +205,7 @@ class Router(object):
             send_message(sender, self.state.start_session(sender, message))
             send_message(sender, self.state.next_question())
         elif message.startswith('import'):
-            send_message(sender, self.state.perform_import(sender, message[7:]))
+            send_message(sender, self.state.perform_import(message[7:]))
         elif message.startswith('help'):
             send_message(sender, self.state.help())
         elif message.startswith('list'):
