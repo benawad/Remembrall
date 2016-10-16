@@ -57,6 +57,15 @@ class ApplicationState(object):
         self.sessions = {}
         self.buckets = {}
 
+    def help(self):
+        return """
+        Available commands:
+        - import <quizlet id>
+        - quiz <quizlet id>
+        - list
+        - stop
+        """
+
     def perform_import(self, set_id):
         if self.decks[set_id]:
             return 'This deck has already been imported.'
@@ -76,7 +85,7 @@ class ApplicationState(object):
             'deck': deck_id,
         }
         self._rotate_buckets(user, deck_id)
-        return self.hard_question()
+        return "Let's play a game!"
 
     def next_question(self, user):
         """Asks the next question."""
@@ -176,7 +185,83 @@ class ApplicationState(object):
         return user_buckets[deck_id]
 
 
-state = ApplicationState()
+class Router(object):
+
+    def __init__(self):
+        self.state = ApplicationState()
+
+    def handle_postback(self, sender, payload):
+        send_message(sender, self.state.bucket(sender, payload))
+
+    def handle_message(self, sender, message):
+        if message.startswith('quiz me'):
+            send_message(sender, self.state.start_session(sender, message))
+            send_message(sender, self.state.next_question())
+        elif message.startswith('import'):
+            send_message(sender, self.state.perform_import(sender, message[7:]))
+        elif message.startswith('help'):
+            send_message(sender, self.state.help())
+        elif message.startswith('list'):
+            send_message(sender, self.state.list())
+        elif self.state.is_answering(sender):
+            self.send_answer(sender, self.state.answer_question(sender))
+        else:
+            send_message(sender, "I'm not sure how to respond to that. Say 'help' for help.")
+
+
+    def send_answer(self, sender, answer):
+        message_data = {
+            'recipient': {'id': sender},
+            'message': {
+                "attachment": {
+                    "type": "template",
+                    "payload": {
+                        "template_type": "generic",
+                        "elements": [
+                            {
+                                "title": answer,
+                                "buttons": [
+                                    {
+                                        "type": "postback",
+                                        "title": "Yes (easy)",
+                                        "payload": "easy",
+                                    },
+                                    {
+                                        "type": "postback",
+                                        "title": "Yes (medium)",
+                                        "payload": "medium",
+                                    },
+                                    {
+                                        "type": "postback",
+                                        "title": "Yes (hard)",
+                                        "payload": "hard",
+                                    },
+                                    {
+                                        "type": "postback",
+                                        "title": "No",
+                                        "payload": "no",
+                                    },
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+        headers = {'Content-Type': 'application/json'}
+        params = {'access_token': os.environ['PAGE_ACCESS_TOKEN']}
+        r = requests.post("https://graph.facebook.com/v2.6/me/messages",
+                        params=params, headers=headers, data=json.dumps(message_data))
+        if r.status_code == 200:
+            print('Sent "%s" to %s' % (sender, message_data))
+        else:
+            print('FAILED to send "%s" to %s' % (sender, message_data))
+            print('REASON: %s' % r.text)
+
+
+
+router = Router()
+
 
 @app.route("/")
 def hello():
@@ -190,12 +275,12 @@ def verify():
         for m in data['entry'][0]['messaging']:
             if 'postback' in m:
                 payload = m['postback']['payload']
-                if payload == 'answer':
-                    send_answer(m['sender']['id'])
+                handler.handle_postback(m['sender']['id'], m['postback']['payload'])
             if 'message' in m:
+                handler.handle_message(m['sender']['id'], m['message']['text'])
                 # send_message(m['sender']['id'], m['message']['text'])
                 # send_question(m['sender']['id'])
-                search_quizlet(m['sender']['id'], m['message']['text'])
+                # search_quizlet(m['sender']['id'], m['message']['text'])
         return "ok!", 200
     else:
         token = request.args.get('hub.verify_token', '')
