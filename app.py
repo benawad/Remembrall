@@ -86,7 +86,7 @@ class ApplicationState(object):
             'deck': deck_id,
         }
         self._rotate_buckets(user, deck_id)
-        return "Let's play a game!"
+        return "Let's play a game! {}".format(self.next_question(user))
 
     def next_question(self, user):
         """Asks the next question."""
@@ -204,7 +204,6 @@ class Router(object):
     def handle_message(self, sender, message):
         if message.startswith('quiz'):
             send_message(sender, self.state.start_session(sender, message))
-            send_message(sender, self.state.next_question(sender))
         elif message.startswith('import'):
             send_message(sender, self.state.perform_import(message[7:]))
         elif message.startswith('help'):
