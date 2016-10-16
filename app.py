@@ -276,9 +276,8 @@ def verify():
             if 'postback' in m:
                 router.handle_postback(m['sender']['id'], m['postback']['payload'])
             if 'message' in m:
-                print("MESSAGE:")
-                print(m['message'])
-                router.handle_message(m['sender']['id'], m['message']['text'])
+                if "text" in m['message']:
+                    router.handle_message(m['sender']['id'], m['message']['text'])
                 # send_message(m['sender']['id'], m['message']['text'])
                 # send_question(m['sender']['id'])
                 # search_quizlet(m['sender']['id'], m['message']['text'])
