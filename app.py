@@ -210,8 +210,16 @@ class Router(object):
         parts = message.split()
 
         if message.startswith('quiz'):
+            if len(parts) <= 1:
+                send_message(sender, "You need to say: quiz <set id>")
+                return
+
             send_message(sender, self.state.start_session(sender, parts[1]))
         elif message.startswith('import'):
+            if len(parts) <= 1:
+                send_message(sender, "You need to say: import <set id>")
+                return
+
             send_message(sender, self.state.perform_import(parts[1]))
         elif message.startswith('help'):
             send_message(sender, self.state.help())
