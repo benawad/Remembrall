@@ -225,6 +225,8 @@ class Router(object):
             send_message(sender, self.state.help())
         elif message.startswith('list'):
             send_message(sender, self.state.list())
+        elif message.startswith('stop'):
+            send_message(sender, self.state.stop_session(sender))
         elif self.state.is_answering(sender):
             self.send_answer(sender, self.state.answer_question(sender))
         else:
