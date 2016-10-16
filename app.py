@@ -77,6 +77,7 @@ class ApplicationState(object):
 
     def start_session(self, user, deck_id):
         """Starts a session."""
+        print("User: %s" % user)
         if user in self.sessions:
             # invalid operation
             return 'A session is currently in progress.'
