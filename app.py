@@ -274,10 +274,9 @@ def verify():
         # loop through unread messages
         for m in data['entry'][0]['messaging']:
             if 'postback' in m:
-                payload = m['postback']['payload']
-                handler.handle_postback(m['sender']['id'], m['postback']['payload'])
+                router.handle_postback(m['sender']['id'], m['postback']['payload'])
             if 'message' in m:
-                handler.handle_message(m['sender']['id'], m['message']['text'])
+                router.handle_message(m['sender']['id'], m['message']['text'])
                 # send_message(m['sender']['id'], m['message']['text'])
                 # send_question(m['sender']['id'])
                 # search_quizlet(m['sender']['id'], m['message']['text'])
