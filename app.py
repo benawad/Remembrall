@@ -81,6 +81,7 @@ class ApplicationState(object):
             # invalid operation
             return 'A session is currently in progress.'
 
+        # ensure we have a deck
         deck = fetch_quizlet(deck_id)
         if not deck:
             return "Could not find a valid Quizlet deck."
