@@ -304,9 +304,6 @@ def verify():
             if 'message' in m:
                 if "text" in m['message']:
                     router.handle_message(m['sender']['id'], m['message']['text'])
-                # send_message(m['sender']['id'], m['message']['text'])
-                # send_question(m['sender']['id'])
-                # search_quizlet(m['sender']['id'], m['message']['text'])
         return "ok!", 200
     else:
         token = request.args.get('hub.verify_token', '')
