@@ -350,49 +350,6 @@ def send_question(recipient_id):
         print('FAILED to send "%s" to %s' % (recipient_id, message_data))
         print('REASON: %s' % r.text)
 
-def send_answer(recipient_id):
-    message_data = {
-        'recipient': {'id': recipient_id},
-        'message': {
-            "attachment": {
-                "type": "template",
-                "payload": {
-                    "template_type": "generic",
-                    "elements": [
-                        {
-                            "title": "I am an answer.",
-                            "buttons": [
-                                {
-                                    "type": "postback",
-                                    "title": "Wrong",
-                                    "payload": "wrong",
-                                },
-                                {
-                                    "type": "postback",
-                                    "title": "Right",
-                                    "payload": "right",
-                                },
-                                {
-                                    "type": "postback",
-                                    "title": "Too easy",
-                                    "payload": "easy",
-                                },
-                            ]
-                        }
-                    ]
-                }
-            }
-        }
-    }
-    headers = {'Content-Type': 'application/json'}
-    params = {'access_token': os.environ['PAGE_ACCESS_TOKEN']}
-    r = requests.post("https://graph.facebook.com/v2.6/me/messages",
-                      params=params, headers=headers, data=json.dumps(message_data))
-    if r.status_code == 200:
-        print('Sent "%s" to %s' % (recipient_id, message_data))
-    else:
-        print('FAILED to send "%s" to %s' % (recipient_id, message_data))
-        print('REASON: %s' % r.text)
 
 def list_thumbnails(recipient_id, elements):
     message_data = {
