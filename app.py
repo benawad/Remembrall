@@ -163,7 +163,7 @@ class ApplicationState(object):
 
     def list(self):
         """Lists the decks available."""
-        return 'Decks available: {}'.format("\n".join([
+        return 'Decks available: \n{}'.format("\n".join([
             'Deck {}: {} ({} cards)'.format(deck['id'], deck['title'], len(deck['cards']))
             for key, deck in self.decks.items()
         ]))
