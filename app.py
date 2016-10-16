@@ -16,7 +16,8 @@ def verify():
         # loop through unread messages
         for m in data['entry'][0]['messaging']:
             if 'message' in m:
-                send_message(m['sender']['id'], m['message']['text'])
+                # send_message(m['sender']['id'], m['message']['text'])
+                send_thumbnail(m['sender']['id'])
         return "ok!", 200
     else:
         token = request.args.get('hub.verify_token', '')
@@ -41,6 +42,40 @@ def send_message(recipient_id, message):
         print('Sent "%s" to %s' % (recipient_id, message))
     else:
         print('FAILED to send "%s" to %s' % (recipient_id, message))
+        print('REASON: %s' % r.text)
+
+def send_thumbnail(recipient_id):
+    message_data = {
+        'recipient': {'id': recipient_id},
+        'message': {
+            "attachment": {
+                "type": "template",
+                "payload": {
+                    "template_type": "generic",
+                    "elements": [
+                        {
+                            "title": "I am a question.",
+                            "buttons": [
+                                {
+                                    "type": "postback",
+                                    "title": "Answer",
+                                    "payload": "answer",
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    }
+    headers = {'Content-Type': 'application/json'}
+    params = {'access_token': os.environ['PAGE_ACCESS_TOKEN']}
+    r = requests.post("https://graph.facebook.com/v2.6/me/messages",
+                      params=params, headers=headers, data=json.dumps(message_data))
+    if r.status_code == 200:
+        print('Sent "%s" to %s' % (recipient_id, message_data))
+    else:
+        print('FAILED to send "%s" to %s' % (recipient_id, message_data))
         print('REASON: %s' % r.text)
 
 if __name__ == "__main__":
