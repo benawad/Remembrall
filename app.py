@@ -207,10 +207,12 @@ class Router(object):
         send_message(sender, self.state.bucket(sender, payload))
 
     def handle_message(self, sender, message):
+        parts = message.split()
+
         if message.startswith('quiz'):
-            send_message(sender, self.state.start_session(sender, message[len("quiz "):]))
+            send_message(sender, self.state.start_session(sender, parts[1]))
         elif message.startswith('import'):
-            send_message(sender, self.state.perform_import(message[7:]))
+            send_message(sender, self.state.perform_import(parts[1]))
         elif message.startswith('help'):
             send_message(sender, self.state.help())
         elif message.startswith('list'):
