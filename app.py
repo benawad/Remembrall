@@ -34,6 +34,24 @@ def verify():
         else:
             return "Something went wrong :(", 403
 
+@app.route("/quizlet/<int:set_id>")
+def get_quizlet(set_id):
+    client_id = os.environ['QUORA_CLIENT_ID']
+    payload = {'client_id': client_id, 'whitespace': 1}
+    r = requests.get("https://api.quizlet.com/2.0/sets/{}".format(set_id),
+            params=payload)
+
+    if r.status_code == 200:
+        data = json.loads(r.text)
+        title = data['title']
+        cards = data['terms']
+        #db.put...
+        return "Got {} flashcards!".format(title), 200
+
+    else:
+        return "Something went wrong", 500
+
+
 def send_message(recipient_id, message):
     message_data = {
             'recipient': {'id' : recipient_id},
