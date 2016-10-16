@@ -81,6 +81,7 @@ class ApplicationState(object):
             # invalid operation
             return 'A session is currently in progress.'
 
+
         self.sessions[user] = {
             'deck': deck_id,
         }
@@ -90,7 +91,7 @@ class ApplicationState(object):
     def next_question(self, user):
         """Asks the next question."""
         if not self.sessions[user]:
-            return "You aren't currently in a session. Type 'quiz on <set>' to start."
+            return "You aren't currently in a session. Type 'quiz <set>' to start."
 
         deck_id = self.sessions[user]['deck']
         current_buckets = self._fetch_buckets(user, deck_id)
@@ -110,7 +111,7 @@ class ApplicationState(object):
 
     def answer_question(self, user):
         if not self.sessions[user]:
-            return "You aren't currently in a session. Type 'quiz on <set>' to start."
+            return "You aren't currently in a session. Type 'quiz <set>' to start."
 
         deck_id = self.sessions[user]['deck']
         self.sessions[user]['is_answering'] = False
@@ -121,7 +122,7 @@ class ApplicationState(object):
 
     def bucket(self, user, response):
         if not self.sessions[user]:
-            return "You aren't currently in a session. Type 'quiz on <set>' to start."
+            return "You aren't currently in a session. Type 'quiz <set>' to start."
 
         deck_id = self.sessions[user]['deck']
         current_buckets = self._fetch_buckets(user, deck_id)
