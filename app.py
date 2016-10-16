@@ -16,7 +16,7 @@ def set_to_element(st):
                 "type": "postback",
                 "title": "Import",
                 "payload": "import %s" % st['id']
-            }       
+            }
         ]
     }
 
