@@ -77,7 +77,7 @@ class ApplicationState(object):
 
     def start_session(self, user, deck_id):
         """Starts a session."""
-        if self.sessions[user]:
+        if user in self.sessions:
             # invalid operation
             return 'A session is currently in progress.'
 
@@ -90,7 +90,7 @@ class ApplicationState(object):
     def next_question(self, user):
         """Asks the next question."""
         if not self.sessions[user]:
-            return "You aren't currently in a session. Type 'quiz me on <set>' to start."
+            return "You aren't currently in a session. Type 'quiz on <set>' to start."
 
         deck_id = self.sessions[user]['deck']
         current_buckets = self._fetch_buckets(user, deck_id)
@@ -110,7 +110,7 @@ class ApplicationState(object):
 
     def answer_question(self, user):
         if not self.sessions[user]:
-            return "You aren't currently in a session. Type 'quiz me on <set>' to start."
+            return "You aren't currently in a session. Type 'quiz on <set>' to start."
 
         deck_id = self.sessions[user]['deck']
         self.sessions[user]['is_answering'] = False
@@ -121,7 +121,7 @@ class ApplicationState(object):
 
     def bucket(self, user, response):
         if not self.sessions[user]:
-            return "You aren't currently in a session. Type 'quiz me on <set>' to start."
+            return "You aren't currently in a session. Type 'quiz on <set>' to start."
 
         deck_id = self.sessions[user]['deck']
         current_buckets = self._fetch_buckets(user, deck_id)
@@ -159,7 +159,7 @@ class ApplicationState(object):
         """Lists the decks available."""
         return 'Decks available: {}'.format([
             'Deck {}: {} ({} cards)'.format(deck['id'], deck['title'], len(deck['cards']))
-            for key, deck in self.decks
+            for key, deck in self.decks.items()
         ])
 
 
@@ -201,7 +201,7 @@ class Router(object):
         send_message(sender, self.state.bucket(sender, payload))
 
     def handle_message(self, sender, message):
-        if message.startswith('quiz me'):
+        if message.startswith('quiz'):
             send_message(sender, self.state.start_session(sender, message))
             send_message(sender, self.state.next_question())
         elif message.startswith('import'):
