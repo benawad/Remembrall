@@ -5,6 +5,65 @@ import os
 
 app = Flask(__name__)
 
+def fetch_quizlet(deck_id):
+    client_id = os.environ['QUIZLET_CLIENT_ID']
+    payload = {'client_id': client_id, 'whitespace': 1}
+    r = requests.get("https://api.quizlet.com/2.0/sets/{}".format(deck_id),
+            params=payload)
+
+    if r.status != 200:
+        return None
+
+    data = json.loads(r.text)
+    title = data['title']
+    cards = data['terms']
+    return {
+        'id': deck_id,
+        'title': title,
+        'cards': cards,
+    }
+
+class ApplicationState(object):
+
+    def __init__(self):
+        self.decks = {}
+        self.sessions = {}
+        self.buckets = {}
+
+    def perform_import(self, set_id):
+        if self.decks[set_id]:
+            return 'This deck has already been imported.'
+        deck = fetch_quizlet(set_id)
+        if not deck:
+            return 'Could not find a valid Quizlet deck.'
+        self.decks[set_id] = deck
+        return 'Imported deck {} succcessfully.'.format(set_id)
+
+    def start_session(self, user, deck_id):
+        """Starts a session."""
+        if self.sessions[user]:
+            # invalid operation
+            return 'A session is currently in progress.'
+
+        self.sessions[user] = {
+            'deck': deck_id,
+        }
+
+    def stop_session(self, user):
+        if user not in self.sessions:
+            return 'You are not currently in a session.'
+        del self.sessions[user]
+        return 'Thanks for playing!'
+
+    def list(self):
+        """Lists the decks available."""
+        return 'Decks available: {}'.format([
+            'Deck {}: {} ({} cards)'.format(deck['id'], deck['title'], len(deck['cards']))
+            for deck in self.decks
+        ])
+
+state = ApplicationState()
+
 @app.route("/")
 def hello():
     return 'Hello!'
