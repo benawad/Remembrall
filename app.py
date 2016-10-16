@@ -67,7 +67,7 @@ class ApplicationState(object):
         """
 
     def perform_import(self, set_id):
-        if self.decks[set_id]:
+        if set_id in self.decks:
             return 'This deck has already been imported.'
         deck = fetch_quizlet(set_id)
         if not deck:
