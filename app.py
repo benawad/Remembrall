@@ -107,7 +107,7 @@ class ApplicationState(object):
         self.sessions[user]['is_answering'] = True
 
         # ask question
-        return str(now[0])
+        return str(now[0]['definition'])
 
 
     def is_answering(self, user):
@@ -123,7 +123,7 @@ class ApplicationState(object):
         current_buckets = self._fetch_buckets(user, deck_id)
         now = current_buckets['now']
 
-        return "The answer is {}. Did you get it right?".format(str(now[0]))
+        return "The answer is {}. Did you get it right?".format(str(now[0]['term']))
 
     def bucket(self, user, response):
         if not self.sessions[user]:
@@ -173,9 +173,9 @@ class ApplicationState(object):
         """Updates the now bucket if empty."""
         buckets = self._fetch_buckets(user, deck_id)
         while not buckets['now']:
+            print("looping")
             buckets['now'] = buckets['hard']
-            buckets['hard'] = buckets['medium']
-            buckets['medium'] = buckets['easy']
+            buckets['hard'] = buckets['easy']
 
 
     def _fetch_buckets(self, user, deck_id):
@@ -237,23 +237,18 @@ class Router(object):
                                 "buttons": [
                                     {
                                         "type": "postback",
+                                        "title": "No",
+                                        "payload": "no",
+                                    },
+                                    {
+                                        "type": "postback",
                                         "title": "Yes (easy)",
                                         "payload": "easy",
                                     },
                                     {
                                         "type": "postback",
-                                        "title": "Yes (medium)",
-                                        "payload": "medium",
-                                    },
-                                    {
-                                        "type": "postback",
                                         "title": "Yes (hard)",
                                         "payload": "hard",
-                                    },
-                                    {
-                                        "type": "postback",
-                                        "title": "No",
-                                        "payload": "no",
                                     },
                                 ]
                             }
