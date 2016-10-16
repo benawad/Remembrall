@@ -98,8 +98,14 @@ class ApplicationState(object):
         if not now:
             return "You've answered all of the questions! " + self.stop_session()
 
+        self.sessions[user]['is_answering'] = True
+
         # ask question
         return str(now[0])
+
+
+    def is_answering(self, user):
+        return user in self.sessions and self.sessions[user]['is_answering']
 
 
     def answer_question(self, user):
@@ -107,6 +113,7 @@ class ApplicationState(object):
             return "You aren't currently in a session. Type 'quiz me on <set>' to start."
 
         deck_id = self.sessions[user]['deck']
+        self.sessions[user]['is_answering'] = False
         current_buckets = self._fetch_buckets(user, deck_id)
         now = current_buckets['now']
 
