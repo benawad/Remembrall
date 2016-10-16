@@ -81,6 +81,10 @@ class ApplicationState(object):
             # invalid operation
             return 'A session is currently in progress.'
 
+        deck = fetch_quizlet(deck_id)
+        if not deck:
+            return "Could not find a valid Quizlet deck."
+        self.decks[deck_id] = deck
 
         self.sessions[user] = {
             'deck': deck_id,
