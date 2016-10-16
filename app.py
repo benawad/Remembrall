@@ -160,7 +160,7 @@ class ApplicationState(object):
         return 'Decks available: {}'.format([
             'Deck {}: {} ({} cards)'.format(deck['id'], deck['title'], len(deck['cards']))
             for key, deck in self.decks.items()
-        ])
+        ].join('\n'))
 
 
     def _rotate_buckets(self, user, deck_id):
