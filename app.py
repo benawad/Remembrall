@@ -125,7 +125,7 @@ def verify():
 
 @app.route("/quizlet/<int:set_id>")
 def get_quizlet(set_id):
-    client_id = os.environ['QUORA_CLIENT_ID']
+    client_id = os.environ['QUIZLET_CLIENT_ID']
     payload = {'client_id': client_id, 'whitespace': 1}
     r = requests.get("https://api.quizlet.com/2.0/sets/{}".format(set_id),
             params=payload)
