@@ -29,7 +29,7 @@ def search_quizlet(recipient_id, q):
         send_message(recipient_id, "Could not find any search results. Try another query")
 
     data = json.loads(r.text)
-    list_thumbnails(recipient_id, list(map(set_to_element, data['sets'])))
+    list_thumbnails(recipient_id, list(map(set_to_element, data['sets'][:5])))
 
 
 def fetch_quizlet(deck_id):
