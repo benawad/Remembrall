@@ -5,13 +5,42 @@ import os
 
 app = Flask(__name__)
 
+def set_to_element(st):
+    return {
+        "title": st['title'],
+        "item_url": "https://quizlet.com%s" % st['url'],
+        # "image_url":"https://petersfancybrownhats.com/company_image.png",
+        "subtitle": "%s cards created by %s" % (st['term_count'], st['created_by']),
+        "buttons": [
+            {
+                "type": "postback",
+                "title": "Import",
+                "payload": "import %s" % st['id']
+            }       
+        ]
+    }
+
+def search_quizlet(recipient_id, q):
+    client_id = os.environ['QUIZLET_CLIENT_ID']
+    payload = {'client_id': client_id, 'whitespace': 1}
+    r = requests.get("https://api.quizlet.com/2.0/search/sets?q=%s" % q, params=payload)
+
+    return r
+
+    if r.status_code != 200:
+        send_message(recipient_id, "Could not find any search results. Try another query")
+
+    data = json.loads(r.text)
+    return data['sets']
+    list_thumbnails(recipient_id, list(map(set_to_element, x), data['sets']))
+
 def fetch_quizlet(deck_id):
     client_id = os.environ['QUIZLET_CLIENT_ID']
     payload = {'client_id': client_id, 'whitespace': 1}
     r = requests.get("https://api.quizlet.com/2.0/sets/{}".format(deck_id),
             params=payload)
 
-    if r.status != 200:
+    if r.status_code != 200:
         return None
 
     data = json.loads(r.text)
@@ -80,7 +109,8 @@ def verify():
                     send_answer(m['sender']['id'])
             if 'message' in m:
                 # send_message(m['sender']['id'], m['message']['text'])
-                send_question(m['sender']['id'])
+                # send_question(m['sender']['id'])
+                search_quizlet(m['sender']['id'], m['message']['text'])
         return "ok!", 200
     else:
         token = request.args.get('hub.verify_token', '')
@@ -210,6 +240,30 @@ def send_answer(recipient_id):
     else:
         print('FAILED to send "%s" to %s' % (recipient_id, message_data))
         print('REASON: %s' % r.text)
+
+def list_thumbnails(recipient_id, elements):
+    message_data = {
+        'recipient': {'id': recipient_id},
+        'message': {
+            "attachment": {
+                "type": "template",
+                "payload": {
+                    "template_type": "generic",
+                    "elements": elements
+                }
+            }
+        }
+    }
+    headers = {'Content-Type': 'application/json'}
+    params = {'access_token': os.environ['PAGE_ACCESS_TOKEN']}
+    r = requests.post("https://graph.facebook.com/v2.6/me/messages",
+                      params=params, headers=headers, data=json.dumps(message_data))
+    if r.status_code == 200:
+        print('Sent "%s" to %s' % (recipient_id, message_data))
+    else:
+        print('FAILED to send "%s" to %s' % (recipient_id, message_data))
+        print('REASON: %s' % r.text)
+
 
 if __name__ == "__main__":
     app.run()
